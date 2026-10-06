@@ -66,6 +66,7 @@ class User(Base):
         secondary=event_users,
         back_populates="users"
     )
+    spots = relationship("Spot", back_populates="user")
 
 class Email_verify_requests(Base):
     __tablename__ = 'verify_requests'
@@ -88,6 +89,8 @@ class Car(Base):
     rarity = Column(Enum(*rarity_types, name="rarity_enum"), unique=False, nullable=False)
     tags = Column(JSON, unique=False, nullable=True)
 
+    spots = relationship("Spot", back_populates="car")
+
 class Event(Base):
     __tablename__ = "events"
     id = Column(Integer, primary_key=True, index=True)
@@ -106,5 +109,17 @@ class Event(Base):
 class Spot(Base):
     __tablename__ = "spots"
     id = Column(Integer, primary_key=True, index=True)
+
+    time = Column(DateTime, nullable=False)
+    localization = Column(JSON, unique=False, nullable=False)
+
+    car_id = Column(Integer, ForeignKey("cars.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    car = relationship("Car", back_populates="spots")
+    user = relationship("User", back_populates="spots")
+
+    # metadata
+    photo_path = Column(String(100), unique=False, nullable=False)
+
 
 
