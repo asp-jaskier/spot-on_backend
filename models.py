@@ -104,7 +104,7 @@ class Event(Base):
     )
 
 class Spot(Base):
-    __table__ = "spots"
+    __tablename__ = "spots"
     id = Column(Integer, primary_key=True, index=True)
 
 
