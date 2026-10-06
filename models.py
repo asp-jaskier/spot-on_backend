@@ -86,7 +86,7 @@ class Car(Base):
     brand = Column(String(70), unique=False, nullable=False)
     model = Column(String(100), unique=True, nullable=False)
     rarity = Column(Enum(*rarity_types, name="rarity_enum"), unique=False, nullable=False)
-    tags = Column(JSON, unique=False, nullable=False)
+    tags = Column(JSON, unique=False, nullable=True)
 
 class Event(Base):
     __tablename__ = "events"
@@ -97,8 +97,14 @@ class Event(Base):
     date = Column(DateTime, nullable=False)
     localization = Column(JSON, unique=False, nullable=False)
     description = Column(String(2000), unique=False, nullable=True)
-    going = relationship(
+    users = relationship(
         "User",
         secondary=event_users,
         back_populates="events"
     )
+
+class Spot(Base):
+    __table__ = "spots"
+    id = Column(Integer, primary_key=True, index=True)
+
+
