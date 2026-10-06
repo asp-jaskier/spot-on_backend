@@ -9,9 +9,11 @@ from sqlalchemy.orm import Session
 from starlette import status
 from database import SessionLocal
 import models
+from sqlalchemy import exc
 from sqlalchemy.orm.attributes import flag_modified
 from routes.auth import get_current_user
 from schemas.user import GetInfo
+from schemas.car import CarCreate
 
 router = InferringRouter(prefix="/cars-api", tags=["cars"])
 
@@ -56,3 +58,25 @@ class cars_api:
         raw_models = db.query(models.Car.model).filter(models.Car.brand == brand).all()
         models_d = [b[0] for b in raw_models]
         return models_d
+
+    @router.post("/add_car", status_code=status.HTTP_201_CREATED, response_model=None)
+    async def add_car(self, carequest: CarCreate):
+        db = self.db_dependency
+        new_car = models.Car(
+            photo_path=carequest.photo_path,
+            brand=carequest.brand,
+            model=carequest.model,
+            rarity=carequest.rarity,
+            tags=carequest.tags,
+        )
+        try:
+            db.add(new_car)
+            db.commit()
+            db.refresh(new_car)
+        except exc.IntegrityError:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Taki model juz istanieje",
+            )
+        return {"msg": "Pomyślnie dodano do bazy danych", "id": new_car.id}
