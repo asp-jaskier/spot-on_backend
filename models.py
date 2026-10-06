@@ -95,6 +95,7 @@ class Event(Base):
     __tablename__ = "events"
     id = Column(Integer, primary_key=True, index=True)
 
+    event_type = Column(Enum(*event_types, name="event_type_enum"), unique=False, nullable=False)
     photo_url = Column(String(100), unique=False, nullable=True)
     name = Column(String(100), unique=False, nullable=False)
     date = Column(DateTime, nullable=False)

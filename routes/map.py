@@ -1,6 +1,8 @@
 from datetime import timedelta, datetime, date
 from typing import Annotated
 from urllib import request
+import math
+from sqlalchemy import cast, Float
 
 from fastapi import WebSocket, APIRouter, Depends, HTTPException, Request, Response
 from fastapi_utils.cbv import cbv
@@ -9,9 +11,10 @@ from sqlalchemy.orm import Session
 from starlette import status
 from database import SessionLocal
 import models
+from settings import static_vars
 from sqlalchemy.orm.attributes import flag_modified
 from routes.auth import get_current_user
-from schemas.user import GetInfo
+from schemas.map import GetMarkers
 
 router = InferringRouter(
     prefix='/map-api',
@@ -42,3 +45,37 @@ class map_api():
         if user is None:
             raise HTTPException(status_code=404, detail='User not found')
         return user
+
+    @router.post("/get_markers", status_code=status.HTTP_200_OK)
+    async def get_markers(self, request: GetMarkers):
+        db = self.db_dependency
+        user = await self.get_user(token=request.token)
+
+        radius = request.radius_km or static_vars.radius_km_loading
+        user_lat, user_lon = request.localization
+
+        # Przelicznik kilometrów na stopnie GPS
+        lat_delta = radius / 111.0
+        lon_delta = radius / (111.0 * math.cos(math.radians(user_lat)))
+
+        # .as_string() wymusza operator '->>' zamiast '->', zwracając tekst możliwy do rzutowania na Float
+        spot_lat = models.Spot.localization[0].as_string().cast(Float)
+        spot_lon = models.Spot.localization[1].as_string().cast(Float)
+
+        data = []
+
+        spots = (
+            db.query(models.Spot)
+            .filter(
+                spot_lat >= user_lat - lat_delta,
+                spot_lat <= user_lat + lat_delta,
+                spot_lon >= user_lon - lon_delta,
+                spot_lon <= user_lon + lon_delta
+            )
+            .all()
+        )
+
+        for spot in spots:
+            data.append({"time": spot.time, "localization": spot.localization, "spot_id": spot.id, "photo": spot.photo_path})
+
+        return {"msg": "success", "data": data}
