@@ -23,7 +23,7 @@ for file in os.listdir("./routes"):
         routes_list.append(root_module)
 
 app = FastAPI(title="RegexTrainer", summary="", version="0.1.0")
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# app.mount("/static", StaticFiles(directory="static"), name="static")
 models.Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
@@ -46,9 +46,9 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
-@app.get('/favicon.ico', include_in_schema=False)
-async def favicon():
-    return FileResponse("./static/favicon.png")
+# @app.get('/favicon.ico', include_in_schema=False)
+# async def favicon():
+#     return FileResponse("./static/favicon.png")
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 async def root():
