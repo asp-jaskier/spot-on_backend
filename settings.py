@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 
 load_dotenv()
 algorithm = str(os.getenv("ALGORITHM"))
@@ -14,5 +15,6 @@ smtp_server_email = str(os.getenv("SMTP_SERVER_EMAIL"))
 class static_vars():
     access_expires = 15 # minutes
     refresh_expires = 3 # hours
-    examples_file_path = "data/examples.txt"
-    learning_files_path = "data/learning/"
+    spots_photos_path = Path('data/photos/spots')
+
+# spots_photos_path.mkdir(parents=True, exist_ok=True) dodać potem zeby działało
