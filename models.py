@@ -7,7 +7,6 @@ from datetime import datetime, timedelta, date
 perms = ['user', 'moderator', 'admin', 'owner']
 gender = ["male", "female", "other"]
 
-exercise_types = ["demo", "exercise", "test", "challenge", "practice"]
 
 class User(Base):
     __tablename__='users'
@@ -38,50 +37,3 @@ class Email_verify_requests(Base):
 
 # else
 
-class Category(Base):
-    __tablename__ = 'categories'
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), unique=True, nullable=False)
-    description = Column(String(500), unique=False, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow(), nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow(), nullable=False)
-    difficulty = Column(Integer, unique=False, nullable=False, default=1)
-    subcategories = relationship(
-        "SubCategory",
-        back_populates="category"
-    )
-
-class SubCategory(Base):
-    __tablename__ = 'subcategories'
-    id = Column(Integer, primary_key=True, index=True)
-    category_id = Column(Integer, ForeignKey('categories.id'), nullable=False)
-    name = Column(String(100), unique=True, nullable=False)
-    description = Column(String(500), unique=False, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow(), nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow(), onupdate=datetime.utcnow(), nullable=False)
-    difficulty = Column(Integer, unique=False, nullable=False, default=1)
-
-    category = relationship(
-        "Category",
-        back_populates="subcategories"
-    )
-
-    exercises = relationship(
-        "Exercise",
-        back_populates="subcategory"
-    )
-
-class Exercise(Base):
-    __tablename__ = 'exercises'
-    id = Column(Integer, primary_key=True, index=True)
-    subcategory_id = Column(Integer, ForeignKey('subcategories.id'), nullable=False)
-    name = Column(String(100), unique=True, nullable=False)
-    type = Column(Enum(*exercise_types, name="exercise_type_enum"), default="exercise", nullable=False)
-    description = Column(String(500), unique=False, nullable=True)
-    examples = Column(JSON, unique=False, nullable=True)
-    correct_regex = Column(String(200), unique=False, nullable=True)
-    preview_examples = Column(JSON, unique=False, nullable=True)
-
-    subcategory = relationship(
-        "SubCategory",
-        back_populates="exercises")
