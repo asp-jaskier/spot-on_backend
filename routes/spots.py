@@ -90,3 +90,20 @@ class spots_api():
     @router.post('/view_spot', status_code=status.HTTP_200_OK)
     async def get_spot_info(self, request: ViewSpot):
         db = self.db_dependency
+
+        user = await self.get_user(request.token)
+
+        spot = db.query(models.Spot).filter(models.Spot.id == request.spot_id).first()
+        if not spot:
+            raise HTTPException(status_code=404, detail='Spot not found')
+
+        times_spotted = (
+            db.query(models.Spot)
+            .join(models.Car)
+            .filter(models.Car.model == spot.car.model)
+            .count()
+        )
+
+        data = {"photo": spot.photo_path, "car_brand": spot.car.brand, "car_model": spot.car.model, "time": spot.time, "times_spotted": times_spotted}
+
+        return {"msg": "success", "data": data}
