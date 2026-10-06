@@ -1,12 +1,46 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date, Table, JSON, Enum, DateTime, Float
 from sqlalchemy.orm import relationship
+from pydantic import BaseModel, Field
+
 
 from database import Base
 from datetime import datetime, timedelta, date
 
 perms = ['user', 'moderator', 'admin', 'owner']
 gender = ["male", "female", "other"]
+event_types = ["drift", "car_meet", "race"]
+rarity_types = [
+    "Common",
+    "Sports Car",
+    "Performance",
+    "Supercar",
+    "Exotic",
+    "Hypercar",
+    "One-of-One",
+]
 
+# car_tags = [
+#     "JDM",
+#     "Euro",
+#     "American",
+#     "Classic",
+#     "Luxury",
+#     "Electric",
+#     "SUV",
+#     "Wagon",
+#     "Convertible",
+# ]
+
+##### TABELE POŚREDNIE ########
+
+event_users = Table(
+    "event_users",
+    Base.metadata,
+    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
+    Column("event_id", Integer, ForeignKey("events.id"), primary_key=True),
+)
+
+###############################
 
 class User(Base):
     __tablename__='users'
@@ -23,9 +57,15 @@ class User(Base):
     country = Column(String(50), unique=False, nullable=False, default='Unknown')
     security_char = Column(String(24))
 
-    #platform things
-    account_level = Column(Integer, unique=False, nullable=False, default=1)
+    #thigs
     xp_have = Column(Integer, unique=False, nullable=False, default=1)
+
+    #powiezania
+    events = relationship(
+        "Event",
+        secondary=event_users,
+        back_populates="users"
+    )
 
 class Email_verify_requests(Base):
     __tablename__ = 'verify_requests'
@@ -36,4 +76,29 @@ class Email_verify_requests(Base):
     expiry_at = Column(DateTime, default= datetime.utcnow() + timedelta(hours=24), nullable=False)
 
 # else
+######################################
 
+class Car(Base):
+    __tablename__ = "cars"
+    id = Column(Integer, primary_key=True, index=True)
+
+    photo_path = Column(String(100), unique=True, nullable=False)
+    brand = Column(String(70), unique=False, nullable=False)
+    model = Column(String(100), unique=True, nullable=False)
+    rarity = Column(Enum(*rarity_types, name="rarity_enum"), unique=False, nullable=False)
+    tags = Column(JSON, unique=False, nullable=False)
+
+class Event(Base):
+    __tablename__ = "events"
+    id = Column(Integer, primary_key=True, index=True)
+
+    photo_url = Column(String(100), unique=False, nullable=True)
+    name = Column(String(100), unique=False, nullable=False)
+    date = Column(DateTime, nullable=False)
+    localization = Column(JSON, unique=False, nullable=False)
+    description = Column(String(2000), unique=False, nullable=True)
+    going = relationship(
+        "User",
+        secondary=event_users,
+        back_populates="events"
+    )

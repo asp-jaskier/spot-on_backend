@@ -28,7 +28,7 @@ def get_db():
 db_dependency = Annotated[Session, Depends(get_db)]
 
 @cbv(router)
-class message_api():
+class users_api():
     def __init__(self, db_dependency: db_dependency):
         self.db_dependency = db_dependency
 

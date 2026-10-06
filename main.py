@@ -22,7 +22,7 @@ for file in os.listdir("./routes"):
         globals()[route_name] = getattr(module, route_name)
         routes_list.append(root_module)
 
-app = FastAPI(title="RegexTrainer", summary="", version="0.1.0")
+app = FastAPI(title="SpotON", summary="", version="0.1.0")
 # app.mount("/static", StaticFiles(directory="static"), name="static")
 models.Base.metadata.create_all(bind=engine)
 
@@ -55,12 +55,11 @@ async def root():
     return """
     <html>
     <head>
-        <title>RegexTrainer</title>
+        <title>spotON</title>
         <link rel="icon" type="image/png" href="/favicon.ico">
     </head>
     <body>
-        <h1>RegexTrainer</h1>
-        <p>Welcome to RegexTrainer! This is the backend API for the RegexTrainer application </p>
+        <h1>SpotOn</h1>
     </body>
     </html>
     """

@@ -16,7 +16,7 @@ from jose import jwt, JWTError
 
 import random, string
 import sqlalchemy
-from settings import secret_key_token, algorithm
+from settings import secret_key_token, algorithm, static_vars
 from utils.email_util import email_utils
 
 email_utils_instance = email_utils()
@@ -146,8 +146,8 @@ async def login_user(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     user = auth_user(form_data.username.lower(), form_data.password, db=db)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user.")
-    token = create_acces_token(user.username, user.id, timedelta(minutes=15), db=db)
-    refresh_token = create_refresh_token(user.username, user.id, timedelta(hours=3), db=db)
+    token = create_acces_token(user.username, user.id, timedelta(minutes=static_vars.access_expires), db=db)
+    refresh_token = create_refresh_token(user.username, user.id, timedelta(hours=static_vars.refresh_expires), db=db)
     return {'access_token': token, 'token_type': 'bearer', 'refresh_token': refresh_token}
 
 def auth_user(username: str, password: str, db):

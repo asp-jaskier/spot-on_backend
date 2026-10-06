@@ -12,5 +12,7 @@ password_email = str(os.getenv("PASSWORD_EMAIL"))
 smtp_server_email = str(os.getenv("SMTP_SERVER_EMAIL"))
 
 class static_vars():
+    access_expires = 15 # minutes
+    refresh_expires = 3 # hours
     examples_file_path = "data/examples.txt"
     learning_files_path = "data/learning/"
