@@ -22,11 +22,11 @@ import models
 from sqlalchemy.orm.attributes import flag_modified
 from routes.auth import get_current_user
 from schemas.user import GetInfo
-from schemas.event import AddEvent
+from schemas.event import AddEvent, AddUserToEvent
 from settings import static_vars
 from pathlib import Path
 from uuid import uuid4
-from sqlalchemy import exc
+from sqlalchemy import exc, func
 from pydantic import ValidationError
 
 router = InferringRouter(prefix="/user-api", tags=["user"])
@@ -92,3 +92,63 @@ class events_api:
         db.refresh(new_event)
 
         return {"msg": "success", "id": new_event.id}
+
+    @router.post("/add_user_to_event", status_code=status.HTTP_201_CREATED)
+    async def add_user_to_event(self, request: AddUserToEvent):
+        db = self.db_dependency
+        user = await self.get_user(request.token)
+        event = (
+            db.query(models.Event).filter(models.Event.id == request.event_id).first()
+        )
+        if not event:
+            raise HTTPException(status_code=404, detail="Event not found")
+
+        stmt = models.event_users.insert().values(
+            user_id=user.id, event_id=request.event_id
+        )
+
+        try:
+            db.execute(stmt)
+            db.commit()
+        except exc.IntegrityError:
+            db.rollback()
+            raise HTTPException(
+                status_code=400, detail="Użytkownik już dołączył do tego wydarzenia"
+            )
+
+        return {"msg": "User added to event successfully"}
+
+    @router.get("/get_event/{event_id}", status_code=status.HTTP_200_OK)
+    async def get_event(self, event_id: int):
+        db = self.db_dependency
+        result = (
+            db.query(
+                models.Event,
+                func.count(models.event_users.c.user_id).label("participants_count"),
+            )
+            .outerjoin(
+                models.event_users, models.Event.id == models.event_users.c.event_id
+            )
+            .filter(models.Event.id == event_id)
+            .group_by(models.Event.id)
+            .all()
+        )
+        if not result:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Event not found"
+            )
+        events_list = []
+        for event, count in result:
+            events_list.append(
+                {
+                    "name": event.name,
+                    "date": event.date,
+                    "localization": event.localization,
+                    "description": event.description,
+                    "event_type": event.event_type,
+                    "photo_url": event.photo_url,
+                    "participants_count": count,
+                }
+            )
+
+        return events_list

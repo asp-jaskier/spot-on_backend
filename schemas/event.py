@@ -8,7 +8,11 @@ class AddEvent(BaseModel):
     token: str
     time: datetime
     localization: tuple[float, float]
-    car_id: int
     name: str
     description: str
     event_type: Literal[*event_types]
+
+
+class AddUserToEvent(BaseModel):
+    token: str
+    event_id: int
