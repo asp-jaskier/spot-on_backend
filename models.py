@@ -101,6 +101,8 @@ class Event(Base):
     date = Column(DateTime, nullable=False)
     localization = Column(JSON, unique=False, nullable=False)
     description = Column(String(2000), unique=False, nullable=True)
+    event_end_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow(), nullable=False)
     users = relationship(
         "User",
         secondary=event_users,
