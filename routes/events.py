@@ -29,7 +29,7 @@ from uuid import uuid4
 from sqlalchemy import exc, func
 from pydantic import ValidationError
 
-router = InferringRouter(prefix="/user-api", tags=["user"])
+router = InferringRouter(prefix="/events-api", tags=["events"])
 
 
 def get_db():
