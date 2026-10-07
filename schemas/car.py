@@ -4,6 +4,7 @@ from models import rarity_types
 
 
 class CarCreate(BaseModel):
+    token: str
     photo_path: str
     brand: str
     model: str

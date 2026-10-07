@@ -60,14 +60,17 @@ class cars_api:
         return models_d
 
     @router.post("/add_car", status_code=status.HTTP_201_CREATED, response_model=None)
-    async def add_car(self, carequest: CarCreate):
+    async def add_car(self, request: CarCreate):
         db = self.db_dependency
+
+        user = await self.get_user(request.token)
+
         new_car = models.Car(
-            photo_path=carequest.photo_path,
-            brand=carequest.brand,
-            model=carequest.model,
-            rarity=carequest.rarity,
-            tags=carequest.tags,
+            photo_path=request.photo_path,
+            brand=request.brand,
+            model=request.model,
+            rarity=request.rarity,
+            tags=request.tags,
         )
         try:
             db.add(new_car)
