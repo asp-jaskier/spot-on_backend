@@ -1,6 +1,6 @@
 from datetime import datetime
+from typing import Literal
 from pydantic import BaseModel
-from typing import List, Literal, Optional
 from models import event_types
 
 

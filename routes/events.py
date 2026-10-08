@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime, date
+from datetime import timedelta, datetime, date, timezone
 from typing import Annotated
 from urllib import request
 
@@ -31,6 +31,16 @@ from pydantic import ValidationError
 
 router = InferringRouter(prefix="/events-api", tags=["events"])
 
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+
+LOCAL_TZ = ZoneInfo("Europe/Warsaw")
+
+
+def to_utc(dt: datetime) -> datetime:
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=LOCAL_TZ)
+    return dt.astimezone(timezone.utc)
 
 def get_db():
     db = SessionLocal()
@@ -67,32 +77,37 @@ class events_api:
             raise HTTPException(status_code=422, detail=e.errors())
 
         db = self.db_dependency
-
         user = await self.get_user(request.token)
 
-        extension = Path(photo.filename).suffix
-        filename = f"{uuid4()}{extension}"
+        start = to_utc(request.time)
+        end = to_utc(request.event_end_at)
 
-        photo_path = static_vars.events_photos_path / filename
-
-        now = datetime.now()
-        with photo_path.open("wb") as buffer:
-            buffer.write(await photo.read())
-        if request.time < datetime.now():
+        if start < datetime.now(timezone.utc):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Czas wydarzenia nie może być w przeszłości",
             )
+        if end <= start:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Koniec wydarzenia musi być po jego początku",
+            )
+
+        extension = Path(photo.filename).suffix
+        filename = f"{uuid4()}{extension}"
+        photo_path = static_vars.events_photos_path / filename
+        with photo_path.open("wb") as buffer:
+            buffer.write(await photo.read())
+
         new_event = models.Event(
             photo_url=str(filename),
             name=request.name,
-            date=request.time,
-            event_end_at=request.event_end_at,
+            date=start,
+            event_end_at=end,
             localization=request.localization,
             description=request.description,
             event_type=request.event_type,
         )
-
         db.add(new_event)
         db.commit()
         db.refresh(new_event)
