@@ -75,13 +75,19 @@ class events_api:
 
         photo_path = static_vars.events_photos_path / filename
 
+        now = datetime.now()
         with photo_path.open("wb") as buffer:
             buffer.write(await photo.read())
-
+        if request.time < datetime.now():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Czas wydarzenia nie może być w przeszłości",
+            )
         new_event = models.Event(
             photo_url=str(filename),
             name=request.name,
             date=request.time,
+            event_end_at=request.event_end_at,
             localization=request.localization,
             description=request.description,
             event_type=request.event_type,
@@ -146,6 +152,7 @@ class events_api:
                     "localization": event.localization,
                     "description": event.description,
                     "event_type": event.event_type,
+                    "event_end_at": event.event_end_at,
                     "photo_url": event.photo_url,
                     "participants_count": count,
                 }

@@ -11,6 +11,7 @@ class AddEvent(BaseModel):
     name: str
     description: str
     event_type: Literal[*event_types]
+    event_end_at: datetime
 
 
 class AddUserToEvent(BaseModel):
