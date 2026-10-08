@@ -19,7 +19,7 @@ class static_vars:
     radius_km_loading = 18
     spots_photos_path = Path("data/photos/spots")
     events_photos_path = Path("data/photos/events")
-    car_photos_path = Path("data/photos/events")
+    cars_photos_path = Path("data/photos/cars")
 
 
 # spots_photos_path.mkdir(parents=True, exist_ok=True) dodać potem zeby działało

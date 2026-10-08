@@ -1,6 +1,10 @@
 from datetime import timedelta, datetime, date
 from typing import Annotated
 from urllib import request
+from pathlib import Path
+from uuid import uuid4
+from settings import static_vars
+
 
 from fastapi import WebSocket, APIRouter, Depends, HTTPException, Request, Response
 from fastapi_utils.cbv import cbv
@@ -63,7 +67,6 @@ class cars_api:
         data.append(
             {
                 "id": data_row.id,
-                "photo_path": data_row.photo_path,
                 "brand": data_row.brand,
                 "model": data_row.model,
                 "rarity": data_row.rarity,
@@ -86,8 +89,12 @@ class cars_api:
 
         user = await self.get_user(request.token)
 
+        extension = Path(request.model).suffix
+        filename = f"{uuid4()}{extension}"
+
+        photo_path = str(static_vars.cars_photos_path / filename)
         new_car = models.Car(
-            photo_path=request.photo_path,
+            photo_path=photo_path,
             brand=request.brand,
             model=request.model,
             rarity=request.rarity,
