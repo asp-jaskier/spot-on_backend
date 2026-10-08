@@ -52,6 +52,27 @@ class cars_api:
         brands = [b[0] for b in raw_brands]
         return brands
 
+    @router.get("/get_car", status_code=status.HTTP_200_OK)
+    async def get_car(self, car_id: int):
+        db = self.db_dependency
+        data_row = db.query(models.Car).filter(models.Car.id == car_id).first()
+        if not data_row:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        data = []
+        data.append(
+            {
+                "id": data_row.id,
+                "photo_path": data_row.photo_path,
+                "brand": data_row.brand,
+                "model": data_row.model,
+                "rarity": data_row.rarity,
+                "tags": data_row.tags,
+            }
+        )
+
+        return data
+
     @router.get("/get_models/{brand}", status_code=status.HTTP_200_OK)
     async def get_models(self, brand: str):
         db = self.db_dependency

@@ -118,6 +118,7 @@ class spots_api:
 
         data = {
             "photo": spot.photo_path,
+            "car_id": spot.car.id,
             "car_brand": spot.car.brand,
             "car_model": spot.car.model,
             "time": spot.time,
@@ -125,3 +126,4 @@ class spots_api:
         }
 
         return {"msg": "success", "data": data}
+
