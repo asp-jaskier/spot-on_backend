@@ -76,12 +76,25 @@ class cars_api:
 
         return data
 
+    # @router.get("/get_models/{brand}", status_code=status.HTTP_200_OK)
+    # async def get_models(self, brand: str):
+    #     db = self.db_dependency
+    #     raw_models = db.query(models.Car.model).filter(models.Car.brand == brand).all()
+    #     models_d = [b[0] for b in raw_models]
+    #     return models_d
+
     @router.get("/get_models/{brand}", status_code=status.HTTP_200_OK)
     async def get_models(self, brand: str):
         db = self.db_dependency
-        raw_models = db.query(models.Car.model).filter(models.Car.brand == brand).all()
-        models_d = [b[0] for b in raw_models]
-        return models_d
+        cars = db.query(models.Car).filter(models.Car.brand == brand).all()
+        return [
+            {
+                "id": c.id,
+                "model": c.model,
+                "rarity": c.rarity,
+            }
+            for c in cars
+        ]
 
     @router.post("/add_car", status_code=status.HTTP_201_CREATED, response_model=None)
     async def add_car(self, request: CarCreate):

@@ -92,7 +92,6 @@ async def create_User(user_request: UserBase, db: db_dependency):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f'Invalid data')
     return {'msg': "success"}
 
-
 async def scheuld_delete(id: int, time: int):
     import asyncio
     await asyncio.sleep(time)
